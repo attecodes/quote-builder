@@ -1,4 +1,4 @@
-import { roundHours } from "../money";
+import { labor } from "./labor";
 import type { DeckMaterial, PriceBook } from "../priceBook";
 import type { LineItem, QuoteSettings, Section } from "../types";
 
@@ -17,10 +17,6 @@ const BOARD_GAP_IN = 0.125;
 export function deckLinearFeet(areaSqFt: number, boardWidthIn: number, wasteFactor: number): number {
   const coveragePerLinearFt = (boardWidthIn + BOARD_GAP_IN) / 12;
   return Math.ceil((areaSqFt / coveragePerLinearFt) * (1 + wasteFactor));
-}
-
-function labor(id: string, label: string, hours: number, settings: QuoteSettings): LineItem {
-  return { id, label, kind: "labor", quantity: roundHours(hours), unit: "hr", unitCost: settings.laborRate };
 }
 
 function demoAndHaul(input: DeckReboardInput, book: PriceBook["deck"], settings: QuoteSettings): LineItem[] {

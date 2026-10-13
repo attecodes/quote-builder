@@ -24,6 +24,12 @@ export interface PriceBook {
     wasteFactor: number;
   };
   handrail: Record<RailStyle, RailPricing>;
+  stairs: {
+    oakTreadPrice: Cents;
+    adhesiveAndFastenersPerTread: Cents;
+    demoHoursPerTread: number;
+    installHoursPerTread: number;
+  };
 }
 
 export type DeckMaterial = "pressure-treated" | "composite";
@@ -55,6 +61,12 @@ export const DEFAULT_PRICE_BOOK: PriceBook = {
     dumpFeePerLoad: dollars(95),
     sqFtPerDumpLoad: 300,
     wasteFactor: 0.1,
+  },
+  stairs: {
+    oakTreadPrice: dollars(48),
+    adhesiveAndFastenersPerTread: dollars(4),
+    demoHoursPerTread: 0.25,
+    installHoursPerTread: 0.5,
   },
   handrail: {
     wood: {

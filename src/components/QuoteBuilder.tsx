@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { deckReboard } from "@/domain/assemblies/deckReboard";
 import { handrailOptions } from "@/domain/assemblies/handrail";
+import { stairTreads } from "@/domain/assemblies/stairTreads";
 import { dollars } from "@/domain/money";
 import { DEFAULT_PRICE_BOOK, type DeckMaterial } from "@/domain/priceBook";
 import { totalsWithSelections } from "@/domain/totals";
@@ -20,19 +21,23 @@ function useQuote() {
   const [material, setMaterial] = useState<DeckMaterial>("pressure-treated");
   const [joistsToRepair, setJoists] = useState(0);
   const [railFt, setRailFt] = useState(12);
+  const [treads, setTreads] = useState(0);
 
   const quote = useMemo<Quote>(() => {
     const settings = { laborRate: dollars(laborRate), materialMarkup: 0.15 };
     return {
       title: "Deck and stair rail",
       settings,
-      sections: [deckReboard({ areaSqFt, material, joistsToRepair }, DEFAULT_PRICE_BOOK, settings)],
+      sections: [
+        deckReboard({ areaSqFt, material, joistsToRepair }, DEFAULT_PRICE_BOOK, settings),
+        ...(treads > 0 ? [stairTreads({ treadCount: treads }, DEFAULT_PRICE_BOOK, settings)] : []),
+      ],
       optionGroups: railFt > 0 ? [handrailOptions({ runLengthFt: railFt }, DEFAULT_PRICE_BOOK, settings)] : [],
     };
-  }, [laborRate, areaSqFt, material, joistsToRepair, railFt]);
+  }, [laborRate, areaSqFt, material, joistsToRepair, railFt, treads]);
 
-  const inputs = { laborRate, areaSqFt, material, joistsToRepair, railFt };
-  const setters = { setLaborRate, setAreaSqFt, setMaterial, setJoists, setRailFt };
+  const inputs = { laborRate, areaSqFt, material, joistsToRepair, railFt, treads };
+  const setters = { setLaborRate, setAreaSqFt, setMaterial, setJoists, setRailFt, setTreads };
   return { quote, inputs, setters };
 }
 
@@ -63,6 +68,7 @@ export function QuoteBuilder() {
           </select>
         </label>
         <NumberField label="Stair handrail run" suffix="ft" testId="rail-length" value={inputs.railFt} onChange={setters.setRailFt} />
+        <NumberField label="Oak stair treads" suffix="treads" testId="stair-treads" value={inputs.treads} onChange={setters.setTreads} />
       </section>
 
       {quote.sections.map((section) => (

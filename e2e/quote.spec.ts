@@ -27,6 +27,14 @@ test.describe("Quote builder", () => {
     await expect.poll(() => total(page)).toBeGreaterThan(before);
   });
 
+  test("adding oak stair treads raises the price", async ({ page }) => {
+    const before = await total(page);
+    await page.getByTestId("stair-treads").fill("12");
+    await expect(page.getByText("Demo existing treads")).toBeVisible();
+    await expect.poll(() => total(page)).toBeGreaterThan(before);
+    await page.screenshot({ path: "test-results/screens/stair-treads.png", fullPage: true });
+  });
+
   test("glass handrail costs more than wood", async ({ page }) => {
     const wood = await total(page);
     await page.getByTestId("option-handrail-glass").check();
