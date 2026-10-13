@@ -6,7 +6,13 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test:unit": "vitest run",
+    "dupes": "jscpd",
+    "deadcode": "knip",
+    "test:e2e": "playwright test",
+    "quality": "npm run lint && npm run typecheck && npm run test:unit && npm run dupes && npm run deadcode"
   },
   "dependencies": {
     "next": "16.4.0",
@@ -14,13 +20,17 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.64.0",
     "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
+    "@types/node": "^22.20.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.0",
+    "jscpd": "^5.4.1",
+    "knip": "^6.41.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^5.0.4"
   }
 }

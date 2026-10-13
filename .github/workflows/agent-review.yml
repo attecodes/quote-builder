@@ -1,0 +1,48 @@
+name: AI reviewer
+
+# A separate review pass with none of the implementer's context.
+# It only sees the diff and the rules in CLAUDE.md, the way an outside
+# reviewer would.
+
+on:
+  pull_request:
+    types: [opened, ready_for_review]
+
+jobs:
+  review:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      pull-requests: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            You are reviewing PR #${{ github.event.pull_request.number }} in ${{ github.repository }}.
+            Read CLAUDE.md first, then the diff (gh pr diff). You have not seen the issue discussion; judge the code on its own.
+
+            Check specifically for:
+            1. Pricing math done outside src/domain, or money stored as floating-point dollars instead of integer cents.
+            2. Prices or production rates hard-coded anywhere except src/domain/priceBook.ts.
+            3. Duplicated logic that should reuse an existing function in src/domain.
+            4. Tests weakened or hard-coded to pass (changed expected values with no reason, skipped tests).
+            5. UI components reaching into domain internals instead of using its exported functions.
+            6. Leftover dead code, debug logs, or comments that only restate the issue title.
+
+            Then assign a blast radius:
+            - small: UI-only change in one component
+            - medium: shared components or a new assembly
+            - large: totals.ts, money.ts, types.ts, priceBook.ts structure, or anything touching saved data
+
+            Post ONE comment with: blast radius, a verdict (approve / changes needed), and a short list of concrete problems with file:line.
+            Do not restate what the PR does. If there are no problems, say so in one line.
+          claude_args: |
+            --max-turns 15
+            --allowedTools "Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr comment:*),Read,Glob,Grep"

@@ -1,0 +1,44 @@
+name: Implementer agent
+
+# Label an issue "agent:build" (or comment "@claude ...") and Claude writes
+# the code on a new branch and opens a pull request. The quality pipeline
+# then runs on that PR automatically.
+
+on:
+  issues:
+    types: [labeled]
+  issue_comment:
+    types: [created]
+
+jobs:
+  implement:
+    if: >
+      (github.event_name == 'issues' && github.event.label.name == 'agent:build') ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          label_trigger: "agent:build"
+          track_progress: "true"
+          # Turn limit: if the agent loops this many times, it stops and a human looks.
+          # Kept lower than the video's 100 because a Pro plan has tighter usage limits.
+          claude_args: |
+            --max-turns 40
+            --allowedTools "Bash(npm run *),Bash(npx playwright *),Bash(git *),Read,Write,Edit,Glob,Grep"
